@@ -5,7 +5,7 @@ namespace Task4.Interfaces;
 
 public interface IUserService
 {
-    Task<(string, Result)> CreateUserAsync(string email, string password, string userName);
+    Task<Result> CreateUserAsync(string email, string password, string userName);
 
     Task<Result> DeleteUserAsync(string userId);
 
@@ -15,9 +15,9 @@ public interface IUserService
 
     Task<Result> DeleteUnverifiedUserListAsync(List<string> userIds);
 
-    Task<List<ApplicationUserDto>> GetAllUsersAsync();
+    Task<List<ApplicationUserDto>> GetAllUsersAsync(string currentUserId);
 
-    //Task<ApplicationUserDto> GetUserAsync(string userId);
+    Task<ApplicationUserDto> GetUserAsync(string userId);
 
     Task<Result> BlockUserAsync(string userId);
 
@@ -28,4 +28,6 @@ public interface IUserService
     Task<Result> UnblockUserListAsync(List<string> userIds);
 
     Task<Result> VerifyUserAsync(string userId);
+
+    Task<Result> UpdateLastLoginTimeAsync(string email);  
 }

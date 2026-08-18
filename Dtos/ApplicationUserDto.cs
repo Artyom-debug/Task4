@@ -2,4 +2,4 @@
 
 namespace Task4.Dtos;
 
-public record ApplicationUserDto(string UserName, string Email, Status Status, DateTime LastLogin, string UserId, bool IsCurrentUser);
+public record ApplicationUserDto(string UserName, string Email, Status Status, DateTime LastLogin, string UserId);
