@@ -15,17 +15,11 @@ public sealed class ApplicationUser : IdentityUser
 
     public void VerifyUser()
     {
-        if (this.Status == Status.blocked)
-            throw new InvalidOperationException("Can't verify blocked user");
-        if(this.Status == Status.active)
-            throw new InvalidOperationException("User already verified account");
         this.Status = Status.active;
     }
 
     public void Unblock(Status status)
     {
-        if (this.Status != Status.blocked)
-            throw new InvalidOperationException($"Can't unblock active user");
         this.Status = status;
     }
 

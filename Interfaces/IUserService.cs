@@ -27,7 +27,9 @@ public interface IUserService
 
     Task<Result> UnblockUserListAsync(List<string> userIds);
 
-    Task<Result> VerifyUserAsync(string userId);
+    Task<Result> VerifyUserAsync(string email);
 
-    Task<Result> UpdateLastLoginTimeAsync(string email);  
+    Task<Result> UpdateLastLoginTimeAsync(string email);
+
+    Task<Result> ResetUserPasswordAsync(string email, string newPassword);
 }

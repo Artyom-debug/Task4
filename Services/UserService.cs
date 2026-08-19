@@ -31,9 +31,6 @@ public sealed class UserService : IUserService
         };
         newUser.SetLoginTime(DateTime.Now);
         var result = await _userManager.CreateAsync(newUser, password);
-
-        /*Email confirmation?*/
-
         return Result.FromIdentity(result);
     }
 
@@ -101,11 +98,11 @@ public sealed class UserService : IUserService
 
     public async Task<List<ApplicationUserDto>> GetAllUsersAsync(string currentUserId)
     {
-        var result = await _userManager.Users
-            .Where(u => u.Id != currentUserId)
-            .Select(u => new ApplicationUserDto(u.UserName, u.Email, u.Status, u.LastLoginTime, u.Id))
-            .OrderBy(dto => dto.LastLogin)
-            .ToListAsync();
+         var result = await _userManager.Users
+                .Where(u => u.Id != currentUserId)
+                .Select(u => new ApplicationUserDto(u.UserName, u.Email, u.Status, u.LastLoginTime, u.Id))
+                .OrderByDescending(dto => dto.LastLogin)
+                .ToListAsync();
         return result;
     }
 
@@ -123,6 +120,7 @@ public sealed class UserService : IUserService
         if (user.Status == Status.blocked)
             return Result.Failure(new string[] {"User already blocked"});
         user.Block();
+        await _userManager.UpdateSecurityStampAsync(user);
         var result = await _userManager.UpdateAsync(user);
         return Result.FromIdentity(result);
     }
@@ -141,6 +139,7 @@ public sealed class UserService : IUserService
                 if (user.Status == Status.blocked)
                     return Result.Failure(new string[] {$"Failed to block selected users. User {user.Email} already blocked" });
                 user.Block();
+                await _userManager.UpdateSecurityStampAsync(user);
                 var result = await _userManager.UpdateAsync(user);
                 if(!result.Succeeded)
                     return Result.FromIdentity(result);
@@ -155,6 +154,8 @@ public sealed class UserService : IUserService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
             return Result.Failure(new string[] { "User not found" });
+        if (user.Status != Status.blocked)
+            return Result.Failure(new string[] { "Can't unblock active user" });
         user.Unblock(user.Status);
         var result = await _userManager.UpdateAsync(user);
         return Result.FromIdentity(result);
@@ -171,8 +172,8 @@ public sealed class UserService : IUserService
                 var user = await _userManager.FindByIdAsync(id);
                 if (user == null)
                     continue;
-                if (user.Status == Status.blocked)
-                    return Result.Failure(new string[] { $"Failed to block selected users. User {user.Email} already blocked" });
+                if (user.Status != Status.blocked)
+                    return Result.Failure(new string[] { $"Failed to block selected users. User {user.Email} not in block" });
                 user.Unblock(user.Status);
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
@@ -183,23 +184,37 @@ public sealed class UserService : IUserService
         return Result.Success();
     }
 
-    public async Task<Result> VerifyUserAsync(string userId)
+    public async Task<Result> VerifyUserAsync(string email)
     {
-        //var user = await _userManager.FindByIdAsync(userId);
-        //if (user == null)
-        //    return Result.Failure(new string[] { "User not found" });
-        //user.VerifyUser();
-        //var result = await _userManager.UpdateAsync(user);
-        //return Result.FromIdentity(result);
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+            return Result.Failure(new string[] { "User not found" });
+        if (user.Status == Status.blocked)
+            return Result.Failure(new string[] { "Can't verify blocked user" });
+        if (user.Status == Status.active)
+            return Result.Failure(new string[] { "User already verified account" });
+        user.VerifyUser();
+        var result = await _userManager.UpdateAsync(user);
+        return Result.FromIdentity(result);
     }
 
     public async Task<Result> UpdateLastLoginTimeAsync(string email)
     {
-        var user = await _userManager.FindByNameAsync(email);
+        var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
             return Result.Failure(new string[] {"User not found"});
-        user.SetLoginTime(DateTime.Now);
+        user.SetLoginTime(DateTime.UtcNow);
         var result = await _userManager.UpdateAsync(user);
+        return Result.FromIdentity(result);
+    }
+
+    public async Task<Result> ResetUserPasswordAsync(string email, string newPassword)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+            return Result.Failure(new string[] {"Incorrect login"});
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
         return Result.FromIdentity(result);
     }
 }

@@ -51,6 +51,6 @@ public class RegisterModel : PageModel
             ModelState.AddModelError(string.Empty, result.Errors[0]);
             return Page();
         }
-        return RedirectToPage("/Verification");
+        return RedirectToPage($"/Verification/{Input.Email}");
     }
 }

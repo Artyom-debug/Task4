@@ -26,6 +26,21 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
   .AddSignInManager<ApplicationSignInManager>();
 
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+{
+    options.ValidationInterval = TimeSpan.Zero; 
+});
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.Events.OnValidatePrincipal = async context =>
+    {
+        if (context.Principal?.Identity?.Name is not string email)
+            return; 
+        var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+        var result = await userService.UpdateLastLoginTimeAsync(email);
+    };
+});
 
 //add db context
 var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
@@ -35,6 +50,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
 });
+
 
 var app = builder.Build();
 if (!app.Environment.IsDevelopment())

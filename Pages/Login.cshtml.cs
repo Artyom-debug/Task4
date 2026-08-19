@@ -12,11 +12,13 @@ public class LoginModel : PageModel
 {
     private readonly IUserService _userService;
     private readonly SignInManager<ApplicationUser> _signIn;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public LoginModel(IUserService userService, SignInManager<ApplicationUser> signIn)
+    public LoginModel(IUserService userService, SignInManager<ApplicationUser> signIn, UserManager<ApplicationUser> userManager)
     {
         _userService = userService;
         _signIn = signIn;
+        _userManager = userManager;
     }
 
     public class InputModel
@@ -45,6 +47,17 @@ public class LoginModel : PageModel
     {
         if (!ModelState.IsValid)
             return Page();
+        var user = await _userManager.FindByEmailAsync(Input.Email);
+        if (user == null)
+        {
+            ModelState.AddModelError(string.Empty, "User doesn't exist. Please, sign up");
+            return Page();
+        }
+        if(user.Status == Status.blocked)
+        {
+            ModelState.AddModelError(string.Empty, "You have been blocked");
+            return Page();
+        }
         var result = await _signIn.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (!result.Succeeded)
         {
@@ -52,7 +65,7 @@ public class LoginModel : PageModel
             return Page();
         }
         var timeResult = await _userService.UpdateLastLoginTimeAsync(Input.Email);
-        if(!timeResult.Succeeded)
+        if (!timeResult.Succeeded)
         {
             ModelState.AddModelError(string.Empty, timeResult.Errors[0]);
             return Page();
