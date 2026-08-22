@@ -1,4 +1,23 @@
-﻿@page
+@page "/Verification/{email}"
 @model Task4.Pages.VerificationModel
 @{
+    ViewData["Title"] = "Verify account";
 }
+
+<div class="auth-wrap">
+    <div class="auth-card text-center">
+        <div class="verify-icon" aria-hidden="true">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="M22 7l-10 7L2 7" />
+            </svg>
+        </div>
+
+        <h1 class="h3 mb-2">Check your inbox</h1>
+        <p class="subtitle">To verify your account click here</p>
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <form method="post">
+            <button type="submit" class="btn btn-accent w-100">Verify</button>
+        </form>
+    </div>
+</div>

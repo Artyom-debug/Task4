@@ -5,6 +5,7 @@ using Task4.Services;
 using Task4.Interfaces;
 using Task4.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,20 +36,22 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromDays(14);
     options.Events.OnValidatePrincipal = async context =>
     {
-        if (context.Principal?.Identity?.Name is not string email)
+        var email = context.Principal?.FindFirstValue(ClaimTypes.Email);
+        if (string.IsNullOrEmpty(email))
             return; 
         var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
         var result = await userService.UpdateLastLoginTimeAsync(email);
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
     };
 });
 
 //add db context
-var connectionString = builder.Configuration.GetConnectionString("PostgresConnection");
+var connectionString = builder.Configuration.GetConnectionString("MsSqlConnection");
 if(connectionString == null)
     throw new ArgumentNullException("Connection string was not found");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseSqlServer(connectionString);
 });
 
 
@@ -56,10 +59,11 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    app.UseHsts();
+    //app.UseHsts();
 }
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages()

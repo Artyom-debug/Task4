@@ -1,20 +1,27 @@
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Task4.Models;
 
-namespace Task4.Pages
+namespace Task4.Pages;
+
+public class IndexModel : PageModel
 {
-    public class IndexModel : PageModel
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    public IndexModel(UserManager<ApplicationUser> userManager)
     {
-        private readonly ILogger<IndexModel> _logger;
+        _userManager = userManager;
+    }
 
-        public IndexModel(ILogger<IndexModel> logger)
-        {
-            _logger = logger;
-        }
+    public Status? UserStatus { get; set; }
+    public string? Email { get; set; }
 
-        public void OnGet()
-        {
-
-        }
+    public async Task OnGetAsync()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+            return;
+        var user = await _userManager.GetUserAsync(User);
+        UserStatus = user?.Status;
+        Email = user?.Email;
     }
 }

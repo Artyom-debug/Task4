@@ -58,7 +58,7 @@ public class LoginModel : PageModel
             ModelState.AddModelError(string.Empty, "You have been blocked");
             return Page();
         }
-        var result = await _signIn.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        var result = await _signIn.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, "Incorrect login or password");
@@ -72,6 +72,4 @@ public class LoginModel : PageModel
         }
         return RedirectToPage("/Index");
     }
-
-    //endpoint to reset password
 }

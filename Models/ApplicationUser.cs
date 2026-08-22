@@ -8,6 +8,8 @@ public sealed class ApplicationUser : IdentityUser
 
     public DateTime LastLoginTime { get; private set; }
 
+    public Status PrevStatus { get; private set; }
+
     public void Block()
     {
         this.Status = Status.blocked;
@@ -18,14 +20,19 @@ public sealed class ApplicationUser : IdentityUser
         this.Status = Status.active;
     }
 
-    public void Unblock(Status status)
+    public void Unblock()
     {
-        this.Status = status;
+        this.Status = this.PrevStatus;
     }
 
     public void SetLoginTime(DateTime time)
     {
         this.LastLoginTime = time;
+    }
+
+    public void SetPreviousStatus()
+    {
+        PrevStatus = this.Status;
     }
 }
 

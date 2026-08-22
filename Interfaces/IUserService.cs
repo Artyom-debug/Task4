@@ -17,7 +17,7 @@ public interface IUserService
 
     Task<List<ApplicationUserDto>> GetAllUsersAsync(string currentUserId);
 
-    Task<ApplicationUserDto> GetUserAsync(string userId);
+    Task<ApplicationUserDto?> GetUserAsync(string userId);
 
     Task<Result> BlockUserAsync(string userId);
 

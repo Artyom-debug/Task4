@@ -1,10 +1,32 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-wrap">
+    <div>
+        <h1>Welcome</h1>
+        @if (Model.UserStatus == null)
+        {
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a class="btn btn-accent px-4" asp-page="/Register">Sign up</a>
+                <a class="btn btn-accent-outline px-4" asp-page="/Login">Log in</a>
+            </div>
+        }
+        else if (Model.UserStatus == Task4.Models.Status.active)
+        {
+            <a class="btn btn-accent px-4" asp-page="/AdminPanel">View users</a>
+        }
+        else if (Model.UserStatus == Task4.Models.Status.unverified)
+        {
+            <p class="text-muted mb-0">Verify your account to view users.</p>
+            <a class="btn btn-accent px-4" asp-page="/Verification" asp-route-email="@Model.Email">Verify</a>
+        }
+        else if (Model.UserStatus == Task4.Models.Status.blocked)
+        {
+            <p class="text-danger mb-0">Your account has been blocked.</p>
+            <a class="btn btn-accent-outline px-4" asp-page="/Login">Log in</a> 
+        }
+    </div>
 </div>

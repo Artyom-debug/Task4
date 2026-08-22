@@ -14,5 +14,10 @@ public sealed class ApplicationUserConfiguration : IEntityTypeConfiguration<Appl
 
         builder.Property(u => u.LastLoginTime)
             .IsRequired();
+
+        builder.HasIndex(u => u.Id)
+            .IsUnique();
+
+        builder.HasIndex(u => u.LastLoginTime);
     }
 }
